@@ -1,0 +1,31 @@
+{
+  "name": "serverless-plugin-thundra-lambda-adapters-cw",
+  "version": "0.0.1",
+  "description": "Thundra Serverless Plugin for AWS Lambda Async Monitoring over AWS CloudWatch",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thundra-io/serverless-plugin-thundra-lambda-adapters-cw.git"
+  },
+  "keywords": [
+    "thundra",
+    "serverless",
+    "plugin",
+    "aws",
+    "lambda",
+    "cloudwatch",
+    "monitor"
+  ],
+  "author": "Serkan OZAL <serkan@thundra.io>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/thundra-io/serverless-plugin-thundra-lambda-adapters-cw/issues"
+  },
+  "homepage": "https://github.com/thundra-io/serverless-plugin-thundra-lambda-adapters-cw#readme",
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "peerDependencies": {
+  }
+}
