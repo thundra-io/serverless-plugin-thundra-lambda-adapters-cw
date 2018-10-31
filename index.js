@@ -13,18 +13,18 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
     beforeDeployCreateDeploymentArtifacts() {
         const me = this;
         const aws = this.serverless.getProvider('aws');
-        const stage = aws.options.stage;
         const region = aws.options.region;
+        const stage = aws.options.stage;
         const adapterResourceName = "thundra-lambda-adapters-cw";
         return aws.request(
-                "S3",
-                "listObjectVersions",
-                {
-                    Bucket: "thundra-dist-" + region,
-                    Prefix: adapterResourceName + ".jar",
-                },
-                stage,
-                region)
+            "S3",
+            "listObjectVersions",
+            {
+                Bucket: "thundra-dist-" + region,
+                Prefix: adapterResourceName + ".jar",
+            },
+            stage,
+            region)
             .then(function(response, err) {
                     if (err) {
                         throw new Error(err.message);
@@ -38,6 +38,7 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
     beforeDeployCreateDeploymentArtifacts0(adapterResourceName, adapterArtifactLatestVersionId) {
         const aws = this.serverless.getProvider('aws');
         const region = aws.options.region;
+        const stage = aws.options.stage ? aws.options.stage : "default";
         const cli = this.serverless.cli;
         const service = this.serverless.service;
         const serviceName = service.service;
@@ -79,7 +80,7 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
 
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            var adapterFunctionName = "thundra-lambda-adapters-cw-" + serviceName;
+            var adapterFunctionName = "thundra-lambda-adapters-cw-" + stage + "-" + serviceName;
             if (service.custom && service.custom.thundraAdapterFunctionName) {
                 adapterFunctionName = service.custom.thundraAdapterFunctionName;
             }
@@ -97,28 +98,28 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
 
             const targetLogGroups = [];
             targetLogGroups.push({
-                    "Fn::Join": [
-                        "", 
-                        [ 
-                            "arn:aws:logs:", 
-                            { "Ref": "AWS::Region" }, 
-                            ":", 
-                            { "Ref": "AWS::AccountId" }, 
-                            ":log-group:" + "/aws/lambda/" + adapterFunctionName + ":*"
-                        ]
+                "Fn::Join": [
+                    "",
+                    [
+                        "arn:aws:logs:",
+                        { "Ref": "AWS::Region" },
+                        ":",
+                        { "Ref": "AWS::AccountId" },
+                        ":log-group:" + "/aws/lambda/" + adapterFunctionName + ":*"
                     ]
-                });
+                ]
+            });
             Object.keys(functions).forEach(functionName => {
                 const logGroupName = "/aws/lambda/" + functionName;
                 targetLogGroups.push({
                     "Fn::Join": [
-                        "", 
-                        [ 
-                            "arn:aws:logs:", 
-                            { "Ref": "AWS::Region" }, 
-                            ":", 
-                            { "Ref": "AWS::AccountId" }, 
-                            ":log-group:" + logGroupName + ":*" 
+                        "",
+                        [
+                            "arn:aws:logs:",
+                            { "Ref": "AWS::Region" },
+                            ":",
+                            { "Ref": "AWS::AccountId" },
+                            ":log-group:" + logGroupName + ":*"
                         ]
                     ]
                 });
@@ -136,7 +137,7 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                                 Service: [ "lambda.amazonaws.com" ]
                             },
                             Action: "sts:AssumeRole"
-                        }]   
+                        }]
                     },
                     Policies: [
                         {
@@ -150,7 +151,7 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                                 }]
                             }
                         }
-                    ]     
+                    ]
                 }
             };
             template.Resources[adapterRoleResourceId] = adapterRoleResource;
@@ -175,7 +176,7 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                 Object.keys(service.custom.thundraAdapterFnVariables).forEach(variableName => {
                     const variableValue = service.custom.thundraAdapterFnVariables[variableName];
                     adapterFnVariables[variableName] = variableValue;
-                });    
+                });
             }
 
             const adapterFunctionResourceId = adapterNormalizedFunctionName;
@@ -187,13 +188,13 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                     Handler: "io.thundra.lambda.adapters.cw.MonitoringDataCloudWatchHandler",
                     Role: {
                         "Fn::Join": [
-                            "", 
-                            [ 
-                                "arn:aws:iam::", 
-                                { "Ref": "AWS::AccountId" }, 
+                            "",
+                            [
+                                "arn:aws:iam::",
+                                { "Ref": "AWS::AccountId" },
                                 ":role/" + adapterRoleName
                             ]
-                         ]
+                        ]
                     },
                     MemorySize: adapterFunctionMemorySize,
                     Runtime: "java8",
@@ -201,12 +202,12 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                     Code: {
                         S3Bucket: {
                             "Fn::Join": [
-                                "", 
-                                [ 
-                                    "thundra-dist-", 
+                                "",
+                                [
+                                    "thundra-dist-",
                                     { "Ref": "AWS::Region" }
                                 ]
-                             ]
+                            ]
                         },
                         S3Key: adapterResourceName + ".jar",
                         S3ObjectVersion: adapterArtifactLatestVersionId
@@ -216,14 +217,14 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                     }
                 },
                 DependsOn: [ adapterRoleResourceId ]
-            }      
+            }
             template.Resources[adapterFunctionResourceId] = adapterFunctionResource;
 
             const adapterFunctionVersionResourceId = adapterNormalizedFunctionName + "Version";
             const adapterFunctionVersionResource = {
                 Type: "AWS::Lambda::Version",
                 DeletionPolicy: "Retain",
-                Properties: {          
+                Properties: {
                     FunctionName: {
                         Ref: adapterFunctionResourceId
                     }
@@ -245,7 +246,7 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                     var skipLogGroupCreation = fn.thundraSkipLogGroupCreation;
                     if (skipAllLogGroupCreations == true) {
                         skipLogGroupCreation = true;
-                    } 
+                    }
 
                     const normalizedFunctionName = aws.naming.getNormalizedFunctionName(fnName);
                     // We used normalized function definition name instead of actual function name
@@ -279,43 +280,43 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                     const lambdaLogGroupPermissionResourceDependencies = [ adapterFunctionResourceId ];
                     if (skipLogGroupCreation != true) {
                         lambdaLogGroupPermissionResourceDependencies.push(logGroupResourceId);
-                    }    
+                    }
                     const lambdaLogGroupPermissionResource = {
                         Type: "AWS::Lambda::Permission",
                         Properties: {
                             Action: "lambda:InvokeFunction",
                             FunctionName: {
                                 "Fn::Join": [
-                                    "", 
-                                    [ 
-                                        "arn:aws:lambda:", 
-                                        { "Ref": "AWS::Region" }, 
-                                        ":", 
-                                        { "Ref": "AWS::AccountId" }, 
+                                    "",
+                                    [
+                                        "arn:aws:lambda:",
+                                        { "Ref": "AWS::Region" },
+                                        ":",
+                                        { "Ref": "AWS::AccountId" },
                                         ":function:" + adapterFunctionName
                                     ]
                                 ]
                             },
                             Principal: {
-                                "Fn::Join": [ 
-                                    "", 
+                                "Fn::Join": [
+                                    "",
                                     [
-                                        "logs.", 
-                                        { "Ref": "AWS::Region" }, 
+                                        "logs.",
+                                        { "Ref": "AWS::Region" },
                                         ".amazonaws.com"
-                                    ] 
+                                    ]
                                 ]
                             },
                             SourceAccount: { "Ref": "AWS::AccountId" },
                             SourceArn: {
                                 "Fn::Join": [
-                                    "", 
-                                    [ 
-                                        "arn:aws:logs:", 
-                                        { "Ref": "AWS::Region" }, 
-                                        ":", 
-                                        { "Ref": "AWS::AccountId" }, 
-                                        ":log-group:" + logGroupName + ":*" 
+                                    "",
+                                    [
+                                        "arn:aws:logs:",
+                                        { "Ref": "AWS::Region" },
+                                        ":",
+                                        { "Ref": "AWS::AccountId" },
+                                        ":log-group:" + logGroupName + ":*"
                                     ]
                                 ]
                             }
@@ -332,18 +333,18 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                     const logGroupSubscriptionResourceDepdendencies = [ adapterFunctionResourceId, lambdaLogGroupPermissionResourceId ];
                     if (skipLogGroupCreation != true) {
                         logGroupSubscriptionResourceDepdendencies.push(logGroupResourceId);
-                    }  
+                    }
                     const logGroupSubscriptionResource = {
                         Type : "AWS::Logs::SubscriptionFilter",
                         Properties: {
                             DestinationArn: {
                                 "Fn::Join": [
-                                    "", 
-                                    [ 
-                                        "arn:aws:lambda:", 
-                                        { "Ref": "AWS::Region" }, 
-                                        ":", 
-                                        { "Ref": "AWS::AccountId" }, 
+                                    "",
+                                    [
+                                        "arn:aws:lambda:",
+                                        { "Ref": "AWS::Region" },
+                                        ":",
+                                        { "Ref": "AWS::AccountId" },
                                         ":function:" + adapterFunctionName
                                     ]
                                 ]
@@ -363,8 +364,8 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
 
     getNormalizedName(naming, name) {
         return naming.normalizeName(name
-          .replace(/-/g, '')
-          .replace(/_/g, ''));
+            .replace(/-/g, '')
+            .replace(/_/g, ''));
     }
 
 };
