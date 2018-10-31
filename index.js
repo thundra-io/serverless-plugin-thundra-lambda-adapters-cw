@@ -248,7 +248,11 @@ module.exports = class ThundraLambdaAdaptersCloudWatchPlugin {
                     } 
 
                     const normalizedFunctionName = aws.naming.getNormalizedFunctionName(fnName);
-                    const logGroupResourceId = normalizedFunctionName + "LogGroup";
+                    // We used normalized function definition name instead of actual function name
+                    // to be compatible with Serverless framework.
+                    // Otherwise same log group is added with different resource ids and this leads to
+                    // already existing log group issue
+                    const logGroupResourceId = aws.naming.getNormalizedFunctionName(functionName) + "LogGroup";
                     const logGroupName = "/aws/lambda/" + fnName;
 
                     ///////////////////////////////////////////////////////////////////////////////////////////////////

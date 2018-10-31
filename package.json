@@ -1,6 +1,6 @@
 {
   "name": "serverless-plugin-thundra-lambda-adapters-cw",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Thundra Serverless Plugin for AWS Lambda Async Monitoring over AWS CloudWatch",
   "main": "index.js",
   "repository": {
